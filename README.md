@@ -1,2 +1,6 @@
-# databricks-playground
-Snippets to help educate
+# lakehouse-playground
+
+Snippets to help educate developers
+
+
+
