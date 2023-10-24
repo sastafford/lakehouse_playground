@@ -240,3 +240,53 @@ df.createOrReplaceTempView("usage")
 # MAGIC FROM usage
 # MAGIC GROUP BY ALL
 # MAGIC ORDER BY dt
+
+# COMMAND ----------
+
+# LIST PRICES SHOWN
+# https://www.databricks.com/product/pricing
+
+sku_df = spark.createDataFrame(
+    [
+        ('ENTERPRISE_ALL_PURPOSE_COMPUTE', 0.55),
+        ('ENTERPRISE_ALL_PURPOSE_COMPUTE_(PHOTON)', 0.55),
+        ('ENTERPRISE_JOBS_COMPUTE', 0.15),
+        ('ENTERPRISE_JOBS_COMPUTE_(PHOTON)', 0.15),
+        ('ENTERPRISE_DLT_CORE_COMPUTE',0.20),
+        ('ENTERPRISE_DLT_PRO_COMPUTE',0.25),
+        ('ENTERPRISE_DLT_ADVANCED_COMPUTE',0.36),
+        ('ENTERPRISE_DLT_CORE_COMPUTE_(PHOTON)',0.20),
+        ('ENTERPRISE_DLT_PRO_COMPUTE_(PHOTON)',0.25),
+        ('ENTERPRISE_DLT_ADVANCED_COMPUTE_(PHOTON)',0.36),
+        ('ENTERPRISE_SQL_COMPUTE',0.22),
+        ('ENTERPRISE_SQL_PRO_COMPUTE_US_EAST_N_VIRGINIA',0.55),
+        ('ENTERPRISE_SQL_PRO_COMPUTE_US_EAST_OHIO',0.55),
+        ('ENTERPRISE_SERVERLESS_SQL_COMPUTE_US_EAST_N_VIRGINIA',0.70),
+        ('ENTERPRISE_SERVERLESS_SQL_COMPUTE_US_EAST_OHIO',0.70),
+        ('ENTERPRISE_SERVERLESS_SQL_COMPUTE_US_WEST_OREGON',0.70),
+    ],
+    ["sku_name", "price"]
+)
+
+sku_df.createOrReplaceTempView("sku_prices")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC
+# MAGIC SELECT *
+# MAGIC FROM sku_prices
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC
+# MAGIC SELECT 
+# MAGIC   date_format(date_trunc("DAY", usage.timestamp), "yyyy-MM-dd") as dt, 
+# MAGIC   usage.sku, 
+# MAGIC   SUM(usage.dbus) as dbus, 
+# MAGIC   sku_prices.price, 
+# MAGIC   (usage.dbus * sku_prices.price) as dollarDBU
+# MAGIC FROM usage LEFT JOIN sku_prices on usage.sku = sku_prices.sku_name
+# MAGIC GROUP BY ALL
+# MAGIC ORDER BY dollarDBU
